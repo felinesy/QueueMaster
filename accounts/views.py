@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from .models import Customer
+from .forms import CustomerForm
 
 
 def register_view(request):
@@ -72,3 +74,42 @@ def logout_view(request):
     logout(request)
 
     return redirect("login")
+
+from .models import Customer
+
+def customer_list(request):
+    customers = Customer.objects.all()
+    return render(request, "customers/list.html", {
+        "customers": customers
+    })
+
+def customer_list(request):
+    customers = Customer.objects.all()
+    return render(request, "customers/list.html", {
+        "customers": customers
+    })
+
+
+def customer_add(request):
+
+    if request.method == "POST":
+        form = CustomerForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("customer_list")
+
+    else:
+        form = CustomerForm()
+
+    return render(request, "customers/add.html", {
+        "form": form
+    })
+
+
+def customer_delete(request, pk):
+
+    customer = Customer.objects.get(pk=pk)
+    customer.delete()
+
+    return redirect("customer_list")

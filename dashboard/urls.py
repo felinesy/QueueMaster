@@ -10,4 +10,8 @@ path("services/delete/<int:pk>/", views.service_delete, name="service_delete"),
 path("appointments/", views.appointment_list, name="appointment_list"),
 path("appointments/add/", views.appointment_add, name="appointment_add"),
 path("appointments/delete/<int:pk>/", views.appointment_delete, name="appointment_delete"),
+
+path("staff/", views.staff_list, name="staff_list"),
+path("staff/add/", views.staff_add, name="staff_add"),
+path("staff/delete/<int:pk>/", views.staff_delete, name="staff_delete"),
 ]

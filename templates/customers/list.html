@@ -78,27 +78,32 @@
 
     <hr>
 
-    <a href="/dashboard/">
+    <a href="{% url 'dashboard' %}">
         <i class="bi bi-speedometer2"></i>
         Dashboard
     </a>
 
-    <a class="active" href="/customers/">
+    <a class="active" href="{% url 'customer_list' %}">
         <i class="bi bi-people"></i>
         Customers
     </a>
 
-    <a href="#">
-        <i class="bi bi-calendar-check"></i>
-        Appointments
+    <a href="{% url 'staff_list' %}">
+        <i class="bi bi-person-badge"></i>
+        Staff
     </a>
 
-    <a href="#">
+    <a href="{% url 'service_list' %}">
         <i class="bi bi-scissors"></i>
         Services
     </a>
 
-    <a href="/logout/">
+    <a href="{% url 'appointment_list' %}">
+        <i class="bi bi-calendar-check"></i>
+        Appointments
+    </a>
+
+    <a href="{% url 'logout' %}">
         <i class="bi bi-box-arrow-right"></i>
         Logout
     </a>

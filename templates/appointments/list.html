@@ -4,69 +4,70 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Appointment Management</title>
+<title>QueueMaster | Appointment Management</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
 
 body{
-background:#f5f7fb;
-font-family:Segoe UI;
+    background:#f5f7fb;
+    font-family:Segoe UI;
 }
 
 .sidebar{
-width:220px;
-height:100vh;
-position:fixed;
-background:#10b981;
-padding:20px;
-color:white;
+    width:250px;
+    height:100vh;
+    position:fixed;
+    background:#10b981;
+    padding:20px;
+    color:white;
 }
 
-.sidebar h2{
-font-weight:bold;
-margin-bottom:25px;
+.sidebar h3{
+    font-weight:bold;
 }
 
 .sidebar a{
-display:block;
-color:white;
-text-decoration:none;
-padding:12px;
-margin-bottom:8px;
-border-radius:10px;
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    margin-bottom:8px;
+    border-radius:10px;
 }
 
 .sidebar a:hover,
 .sidebar .active{
-background:white;
-color:#10b981;
+    background:white;
+    color:#10b981;
 }
 
 .content{
-margin-left:240px;
-padding:30px;
+    margin-left:270px;
+    padding:30px;
 }
 
 .card{
-border:none;
-border-radius:18px;
-box-shadow:0 12px 30px rgba(0,0,0,.08);
+    border:none;
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,.08);
 }
 
 .table thead{
-background:#d7ebe2;
+    background:#d7ebe2;
 }
 
 .btn-success{
-background:#10b981;
-border:none;
+    background:#10b981;
+    border:none;
+}
+
+.btn-success:hover{
+    background:#059669;
 }
 
 </style>
@@ -77,19 +78,39 @@ border:none;
 
 <div class="sidebar">
 
-<h2>QueueMaster</h2>
+<h3>QueueMaster</h3>
 
 <hr>
 
-<a href="/dashboard/">Dashboard</a>
+<a href="{% url 'dashboard' %}">
+    <i class="bi bi-speedometer2"></i>
+    Dashboard
+</a>
 
-<a href="/customers/">Customers</a>
+<a href="{% url 'customer_list' %}">
+    <i class="bi bi-people"></i>
+    Customers
+</a>
 
-<a href="/dashboard/services/">Services</a>
+<a href="{% url 'staff_list' %}">
+    <i class="bi bi-person-badge"></i>
+    Staff
+</a>
 
-<a class="active" href="/dashboard/appointments/">Appointments</a>
+<a href="{% url 'service_list' %}">
+    <i class="bi bi-scissors"></i>
+    Services
+</a>
 
-<a href="/logout/">Logout</a>
+<a class="active" href="{% url 'appointment_list' %}">
+    <i class="bi bi-calendar-check"></i>
+    Appointments
+</a>
+
+<a href="{% url 'logout' %}">
+    <i class="bi bi-box-arrow-right"></i>
+    Logout
+</a>
 
 </div>
 
@@ -99,7 +120,9 @@ border:none;
 
 <div>
 
-<h1 class="fw-bold">Appointment Management</h1>
+<h2 class="fw-bold">
+Appointment Management
+</h2>
 
 <p class="text-muted">
 Manage customer appointments.
@@ -107,9 +130,12 @@ Manage customer appointments.
 
 </div>
 
-<a href="/dashboard/appointments/add/" class="btn btn-success">
+<a href="{% url 'appointment_add' %}" class="btn btn-success">
+
 <i class="bi bi-plus-circle"></i>
+
 Add Appointment
+
 </a>
 
 </div>
@@ -118,24 +144,19 @@ Add Appointment
 
 <div class="card-body">
 
-<table class="table table-hover">
+<table class="table table-hover align-middle">
 
-<thead>
+<thead class="table-success">
 
 <tr>
 
 <th>ID</th>
-
 <th>Customer</th>
-
+<th>Staff</th>
 <th>Service</th>
-
 <th>Date</th>
-
 <th>Time</th>
-
 <th>Status</th>
-
 <th>Action</th>
 
 </tr>
@@ -152,6 +173,8 @@ Add Appointment
 
 <td>{{ appointment.customer }}</td>
 
+<td>{{ appointment.staff }}</td>
+
 <td>{{ appointment.service }}</td>
 
 <td>{{ appointment.date }}</td>
@@ -160,17 +183,34 @@ Add Appointment
 
 <td>
 
-<span class="badge bg-success">
-{{ appointment.status }}
+{% if appointment.status == "Waiting" %}
+
+<span class="badge bg-warning text-dark">
+Waiting
 </span>
+
+{% elif appointment.status == "Serving" %}
+
+<span class="badge bg-primary">
+Serving
+</span>
+
+{% else %}
+
+<span class="badge bg-success">
+Completed
+</span>
+
+{% endif %}
 
 </td>
 
 <td>
 
-<a href="/dashboard/appointments/delete/{{ appointment.id }}/"
-class="btn btn-danger btn-sm">
-Delete
+<a href="{% url 'appointment_delete' appointment.pk %}" class="btn btn-danger btn-sm">
+
+<i class="bi bi-trash"></i>
+
 </a>
 
 </td>
@@ -181,13 +221,13 @@ Delete
 
 <tr>
 
-<td colspan="7" class="text-center py-5">
+<td colspan="8" class="text-center py-5">
 
 <i class="bi bi-calendar-x fs-1 text-secondary"></i>
 
-<p class="mt-3 text-muted">
+<br><br>
+
 No appointments found.
-</p>
 
 </td>
 

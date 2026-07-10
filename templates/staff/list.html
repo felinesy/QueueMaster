@@ -11,42 +11,46 @@
 <style>
 
 body{
-background:#f5f7fb;
+    background:#f5f7fb;
 }
 
 .sidebar{
-width:250px;
-height:100vh;
-background:#10b981;
-position:fixed;
-padding:20px;
-color:white;
+    width:250px;
+    height:100vh;
+    background:#10b981;
+    position:fixed;
+    padding:20px;
+    color:white;
+}
+
+.sidebar h3{
+    font-weight:bold;
 }
 
 .sidebar a{
-display:block;
-padding:12px;
-text-decoration:none;
-color:white;
-border-radius:10px;
-margin-bottom:5px;
+    display:block;
+    padding:12px;
+    text-decoration:none;
+    color:white;
+    border-radius:10px;
+    margin-bottom:5px;
 }
 
 .sidebar a:hover,
 .sidebar .active{
-background:white;
-color:#10b981;
+    background:white;
+    color:#10b981;
 }
 
 .content{
-margin-left:270px;
-padding:30px;
+    margin-left:270px;
+    padding:30px;
 }
 
 .card{
-border:none;
-border-radius:15px;
-box-shadow:0 10px 25px rgba(0,0,0,.08);
+    border:none;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
 </style>
@@ -61,17 +65,35 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 
 <hr>
 
-<a href="/dashboard/">Dashboard</a>
+<a href="{% url 'dashboard' %}">
+    <i class="bi bi-speedometer2"></i>
+    Dashboard
+</a>
 
-<a href="/customers/">Customers</a>
+<a href="{% url 'customer_list' %}">
+    <i class="bi bi-people"></i>
+    Customers
+</a>
 
-<a href="/dashboard/staff/" class="active">Staff</a>
+<a href="{% url 'staff_list' %}" class="active">
+    <i class="bi bi-person-badge"></i>
+    Staff
+</a>
 
-<a href="/dashboard/services/">Services</a>
+<a href="{% url 'service_list' %}">
+    <i class="bi bi-scissors"></i>
+    Services
+</a>
 
-<a href="/dashboard/appointments/">Appointments</a>
+<a href="{% url 'appointment_list' %}">
+    <i class="bi bi-calendar-check"></i>
+    Appointments
+</a>
 
-<a href="/logout/">Logout</a>
+<a href="{% url 'logout' %}">
+    <i class="bi bi-box-arrow-right"></i>
+    Logout
+</a>
 
 </div>
 
@@ -89,7 +111,7 @@ Manage salon staff.
 
 </div>
 
-<a href="/dashboard/staff/add/" class="btn btn-success">
+<a href="{% url 'staff_add' %}" class="btn btn-success">
 
 <i class="bi bi-plus-circle"></i>
 
@@ -110,11 +132,8 @@ Add Staff
 <tr>
 
 <th>ID</th>
-
 <th>Full Name</th>
-
 <th>Position</th>
-
 <th>Action</th>
 
 </tr>

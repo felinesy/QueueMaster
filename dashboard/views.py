@@ -1,28 +1,46 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
+from accounts.models import Customer, Staff
+
 from .models import Service, Appointment
 from .forms import ServiceForm, AppointmentForm, StaffForm
 
-from accounts.models import Staff
-
-
 @login_required
 def dashboard(request):
-    return render(request, "dashboard.html")
 
+    customer_count = Customer.objects.count()
+    staff_count = Staff.objects.count()
+    service_count = Service.objects.count()
+    appointment_count = Appointment.objects.count()
+
+    recent_appointments = Appointment.objects.select_related(
+        "customer",
+        "staff",
+        "service"
+    ).order_by("-date", "-time")[:5]
+
+    context = {
+        "customer_count": customer_count,
+        "staff_count": staff_count,
+        "service_count": service_count,
+        "appointment_count": appointment_count,
+        "recent_appointments": recent_appointments,
+    }
+
+    return render(request, "dashboard.html", context)
 
 # =========================
 # SERVICE
 # =========================
 
 def service_list(request):
+
     services = Service.objects.all()
+
     return render(request, "services/list.html", {
         "services": services
     })
-
-
 def service_add(request):
 
     if request.method == "POST":

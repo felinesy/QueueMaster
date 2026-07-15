@@ -1,0 +1,12 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}
+QueueMaster | Add Service
+{% endblock %}
+
+{% block content %}
+
+{% include "partials/form_card.html" with title=title|default:"Add Service" submit_label=button_label|default:"Save Service" cancel_url="/services/" form=form %}
+
+{% endblock %}
+</html>

@@ -1,0 +1,229 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Appointment History
+{% endblock %}
+
+{% block content %}
+
+<style>
+.history-shell{
+    background:linear-gradient(135deg,#ffffff 0%, #f8fffb 45%, #eefdf5 100%);
+}
+.soft-btn{
+    border-radius:999px;
+    padding:.55rem 1rem;
+    font-weight:600;
+}
+.soft-btn-danger{
+    background:linear-gradient(135deg,#ef4444 0%, #dc2626 100%);
+    border:none;
+    color:white;
+}
+.soft-btn-danger:hover{
+    background:linear-gradient(135deg,#dc2626 0%, #b91c1c 100%);
+    color:white;
+}
+.soft-btn-outline{
+    border:1px solid #d1d5db;
+    background:white;
+    color:#334155;
+}
+.soft-btn-outline:hover{
+    background:#f8fafc;
+    color:#0f172a;
+}
+.cancel-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15, 23, 42, .55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:1.5rem;
+    z-index:1050;
+}
+.cancel-overlay.show{
+    display:flex;
+}
+.cancel-modal-card{
+    width:min(100%, 460px);
+    background:white;
+    border-radius:24px;
+    box-shadow:0 24px 48px rgba(15, 23, 42, .25);
+    overflow:hidden;
+}
+.cancel-modal-header{
+    background:linear-gradient(135deg,#fef2f2 0%, #fff 100%);
+    padding:1.25rem 1.5rem;
+    border-bottom:1px solid #fee2e2;
+}
+.cancel-icon{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#fee2e2;
+    color:#dc2626;
+    font-size:1.35rem;
+}
+.cancel-modal-body{
+    padding:1.5rem;
+}
+.cancel-modal-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.75rem;
+    justify-content:flex-end;
+    padding:0 1.5rem 1.5rem;
+}
+</style>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5 history-shell">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Appointment History</h2>
+                <p class="text-muted mb-0">View all your bookings and queue status.</p>
+            </div>
+            <a href="{% url 'customer_book_appointment' %}" class="btn btn-success">Book New Appointment</a>
+        </div>
+
+        <form method="get" class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+                <label for="statusFilter" class="form-label small text-muted mb-1">Filter by status</label>
+                <select id="statusFilter" name="status" class="form-select form-select-sm">
+                    <option value="" {% if not current_status %}selected{% endif %}>All statuses</option>
+                    {% for status_choice in status_choices %}
+                    <option value="{{ status_choice }}" {% if current_status == status_choice %}selected{% endif %}>{{ status_choice }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-success btn-sm">Apply</button>
+            </div>
+        </form>
+
+        <table class="table table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Queue No.</th>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>Q{{ appointment.queue_number|stringformat:"03d" }}</td>
+                    <td>{{ appointment.service }}</td>
+                    <td>{{ appointment.date }}</td>
+                    <td>{{ appointment.time }}</td>
+                    <td>
+                        {% if appointment.status == "Pending" %}
+                            <span class="badge text-bg-secondary">Pending</span>
+                        {% elif appointment.status == "Waiting" %}
+                            <span class="badge text-bg-warning">Waiting</span>
+                        {% elif appointment.status == "Serving" %}
+                            <span class="badge text-bg-primary">Serving</span>
+                        {% elif appointment.status == "Cancelled" %}
+                            <span class="badge text-bg-danger">Cancelled</span>
+                        {% else %}
+                            <span class="badge text-bg-success">Completed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if appointment.status == "Waiting" or appointment.status == "Pending" %}
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'customer_reschedule_appointment' appointment.pk %}" class="btn btn-sm soft-btn soft-btn-outline">Reschedule</a>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm soft-btn soft-btn-danger js-cancel-appointment"
+                                    data-cancel-url="{% url 'customer_cancel_appointment' appointment.pk %}"
+                                    data-appointment-label="{{ appointment.service }} on {{ appointment.date }} at {{ appointment.time }}"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No appointments yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="cancel-overlay" id="cancelOverlay" aria-hidden="true">
+    <div class="cancel-modal-card" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+        <div class="cancel-modal-header d-flex align-items-center gap-3">
+            <div class="cancel-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div>
+                <div class="text-danger fw-semibold text-uppercase small mb-1">Confirm action</div>
+                <h5 class="mb-0 fw-bold" id="cancelModalTitle">Cancel appointment?</h5>
+            </div>
+        </div>
+        <div class="cancel-modal-body">
+            <p class="text-muted mb-0" id="cancelModalText">Are you sure you want to cancel this appointment?</p>
+        </div>
+        <div class="cancel-modal-actions">
+            <button type="button" class="btn soft-btn soft-btn-outline" id="cancelModalClose">Keep Appointment</button>
+            <a href="#" class="btn soft-btn soft-btn-danger" id="cancelModalConfirm">Yes, Cancel</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const overlay = document.getElementById('cancelOverlay');
+    const cancelButtons = document.querySelectorAll('.js-cancel-appointment');
+    const closeButton = document.getElementById('cancelModalClose');
+    const confirmButton = document.getElementById('cancelModalConfirm');
+    const modalText = document.getElementById('cancelModalText');
+
+    function hideModal() {
+        overlay.classList.remove('show');
+        overlay.setAttribute('aria-hidden', 'true');
+        confirmButton.setAttribute('href', '#');
+    }
+
+    cancelButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            const cancelUrl = button.getAttribute('data-cancel-url');
+            const appointmentLabel = button.getAttribute('data-appointment-label');
+            modalText.textContent = 'This will permanently remove ' + appointmentLabel + '. Do you want to continue?';
+            confirmButton.setAttribute('href', cancelUrl);
+            overlay.classList.add('show');
+            overlay.setAttribute('aria-hidden', 'false');
+        });
+    });
+
+    closeButton.addEventListener('click', hideModal);
+    overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) {
+            hideModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            hideModal();
+        }
+    });
+});
+</script>
+
+{% endblock %}

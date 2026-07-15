@@ -1,0 +1,53 @@
+<div class="sidebar">
+
+<h3>QueueMaster</h3>
+
+<hr>
+
+{% if request.user.is_superuser %}
+<a href="{% url 'admin_dashboard' %}">
+    <i class="bi bi-speedometer2"></i>
+    Admin Dashboard
+</a>
+
+<a href="{% url 'customer_list' %}">
+    <i class="bi bi-people"></i>
+    Customers
+</a>
+
+<a href="{% url 'staff_list' %}">
+    <i class="bi bi-person-badge"></i>
+    Staff
+</a>
+{% else %}
+<a href="{% url 'dashboard' %}">
+    <i class="bi bi-speedometer2"></i>
+    Dashboard
+</a>
+{% endif %}
+
+{% if request.user.is_staff and not request.user.is_superuser %}
+<a href="{% url 'service_list' %}">
+    <i class="bi bi-scissors"></i>
+    Services
+</a>
+
+<a href="{% url 'appointment_list' %}">
+    <i class="bi bi-calendar-check"></i>
+    Appointments
+</a>
+
+<a href="{% url 'business_settings' %}">
+    <i class="bi bi-gear"></i>
+    Settings
+</a>
+{% endif %}
+
+<hr>
+
+<a href="{% url 'logout' %}">
+    <i class="bi bi-box-arrow-right"></i>
+    Logout
+</a>
+
+</div>

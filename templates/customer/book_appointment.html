@@ -1,0 +1,93 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Book Appointment
+{% endblock %}
+
+{% block content %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Book Appointment</h2>
+                <p class="text-muted mb-0">Choose a service, date, and time. Your queue number will be generated automatically.</p>
+            </div>
+            <div class="badge bg-success-subtle text-success px-3 py-2">Queue number auto-generated</div>
+        </div>
+
+        {% if business_hours %}
+        <div class="alert alert-info mb-4">
+            <strong>Operating hours:</strong>
+            {{ business_hours.open_time }} - {{ business_hours.close_time }}.
+            {% if closed_days %}
+                <br>
+                <strong>Closed dates:</strong>
+                {% for date in closed_days %}
+                    {{ date|date:"M d, Y" }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                <br>
+                <strong>Closed dates:</strong> none.
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger">Please fix the highlighted fields and try again.</div>
+        {% endif %}
+
+        <form method="POST" class="row g-4">
+            {% csrf_token %}
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Service</label>
+                {{ form.service }}
+                {{ form.service.errors }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Date</label>
+                {{ form.date }}
+                {{ form.date.errors }}
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Time</label>
+                {{ form.time }}
+                {{ form.time.errors }}
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success px-4">Book Now</button>
+                <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if closed_days %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const closedDays = [{% for date in closed_days %}"{{ date|date:'Y-m-d' }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+        const dateInput = document.querySelector('input[name="date"]');
+        if (!dateInput) return;
+
+        dateInput.addEventListener("input", function() {
+            if (closedDays.includes(this.value)) {
+                this.setCustomValidity("This date is closed. Please choose another day.");
+            } else {
+                this.setCustomValidity("");
+            }
+        });
+    });
+</script>
+{% endif %}
+
+{% endblock %}

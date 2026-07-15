@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: queuemaster
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn djangoproject.wsgi:application
+    releaseCommand: python manage.py migrate
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: ALLOWED_HOSTS
+        value: queuemaster.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: queuemaster-db
+          property: connectionString
+
+databases:
+  - name: queuemaster-db
+    databaseName: queuemaster
+    user: queuemaster
+    plan: free

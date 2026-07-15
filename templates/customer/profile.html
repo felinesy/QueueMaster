@@ -1,0 +1,53 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Profile Management</h2>
+                <p class="text-muted mb-0">View your details and edit them when needed.</p>
+            </div>
+            <div class="badge bg-success-subtle text-success px-3 py-2">Customer profile</div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-3 border rounded-4 bg-light">
+                    <div class="text-muted small">Full name</div>
+                    <div class="fs-5 fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-4 bg-light">
+                    <div class="text-muted small">Email</div>
+                    <div class="fs-5 fw-semibold">{{ request.user.email }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-4 bg-light">
+                    <div class="text-muted small">Address</div>
+                    <div class="fs-5 fw-semibold">{{ customer.address|default:"Not set yet" }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 border rounded-4 bg-light">
+                    <div class="text-muted small">Account status</div>
+                    <div class="fs-5 fw-semibold text-success">Active customer account</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 pt-4">
+            <a href="{% url 'customer_profile_edit' %}" class="btn btn-success px-4">Edit Profile</a>
+            <a href="{% url 'customer_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

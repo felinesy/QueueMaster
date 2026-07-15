@@ -1,0 +1,177 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Reschedule Appointment
+{% endblock %}
+
+{% block content %}
+
+<style>
+.reschedule-shell{
+    background:linear-gradient(135deg,#ffffff 0%, #f7fffb 48%, #ecfdf5 100%);
+}
+.info-panel{
+    background:linear-gradient(180deg,#0f766e 0%, #10b981 100%);
+    color:white;
+    border-radius:20px;
+    padding:24px;
+    height:100%;
+}
+.info-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:.45rem;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.24);
+    border-radius:999px;
+    padding:.45rem .8rem;
+    font-size:.92rem;
+}
+.appointment-line{
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+    padding:.75rem 0;
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+.appointment-line:last-child{
+    border-bottom:none;
+}
+.form-card{
+    background:white;
+    border-radius:20px;
+    box-shadow:0 16px 32px rgba(15, 23, 42, .08);
+}
+</style>
+
+<div class="row g-4 align-items-stretch">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm form-card reschedule-shell h-100">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                    <div>
+                        <div class="text-success fw-semibold text-uppercase small mb-2">Customer Queue</div>
+                        <h2 class="fw-bold mb-1">Reschedule Appointment</h2>
+                        <p class="text-muted mb-0">Update the service, date, or time for your current booking.</p>
+                    </div>
+                    <div class="badge bg-success-subtle text-success px-3 py-2 align-self-start">Queue number updates if the date changes</div>
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger">Please fix the highlighted fields and try again.</div>
+                {% endif %}
+
+                {% if business_hours %}
+                <div class="alert alert-info mb-4">
+                    <strong>Operating hours:</strong> {{ business_hours.open_time }} - {{ business_hours.close_time }}.
+                    {% if closed_days %}
+                        <br>
+                        <strong>Closed dates:</strong>
+                        {% for date in closed_days %}
+                            {{ date|date:"M d, Y" }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <br>
+                        <strong>Closed dates:</strong> none.
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <form method="POST" class="row g-4">
+                    {% csrf_token %}
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Service</label>
+                        {{ form.service }}
+                        {% if form.service.errors %}
+                            <div class="text-danger small mt-1">{{ form.service.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Date</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                            <div class="text-danger small mt-1">{{ form.date.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Time</label>
+                        {{ form.time }}
+                        {% if form.time.errors %}
+                            <div class="text-danger small mt-1">{{ form.time.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12 d-flex flex-wrap gap-2 pt-2">
+                        <button type="submit" class="btn btn-success px-4">Save Changes</button>
+                        <a href="{% url 'customer_history' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="info-panel">
+            <div class="info-chip mb-3">
+                <i class="bi bi-arrow-repeat"></i>
+                Reschedule preview
+            </div>
+
+            <h4 class="fw-bold mb-1">Appointment Q{{ appointment.queue_number|stringformat:"03d" }}</h4>
+            <p class="mb-4 text-white-50">Review the current booking before you save any changes.</p>
+
+            <div class="appointment-line">
+                <span class="text-white-50">Service</span>
+                <strong>{{ appointment.service }}</strong>
+            </div>
+            <div class="appointment-line">
+                <span class="text-white-50">Date</span>
+                <strong>{{ appointment.date }}</strong>
+            </div>
+            <div class="appointment-line">
+                <span class="text-white-50">Time</span>
+                <strong>{{ appointment.time }}</strong>
+            </div>
+            <div class="appointment-line">
+                <span class="text-white-50">Status</span>
+                <strong>
+                    {% if appointment.status == "Waiting" %}
+                        Waiting
+                    {% elif appointment.status == "Serving" %}
+                        Serving
+                    {% else %}
+                        Completed
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="mt-4 p-3 rounded-4" style="background:rgba(255,255,255,.12);">
+                <div class="fw-semibold mb-1">Important</div>
+                <div class="small text-white-50">If you change the date, your queue number will be regenerated for the new day. Time changes keep the same booking slot on that date.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if closed_days %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const closedDays = [{% for date in closed_days %}"{{ date|date:'Y-m-d' }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+        const dateInput = document.querySelector('input[name="date"]');
+        if (!dateInput) return;
+
+        dateInput.addEventListener("input", function() {
+            if (closedDays.includes(this.value)) {
+                this.setCustomValidity("This date is closed. Please choose another day.");
+            } else {
+                this.setCustomValidity("");
+            }
+        });
+    });
+</script>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}
+QueueMaster | Add Appointment
+{% endblock %}
+
+{% block content %}
+
+{% include "partials/form_card.html" with title=title|default:"Add Appointment" submit_label=button_label|default:"Save Appointment" cancel_url="/appointments/" form=form %}
+
+{% endblock %}

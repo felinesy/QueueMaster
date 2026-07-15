@@ -1,0 +1,127 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}
+QueueMaster | Customer Management
+{% endblock %}
+
+{% block content %}
+
+<style>
+table tbody tr:hover{
+    background:#f8f9fa;
+}
+</style>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+                Customer Management
+            </h2>
+
+            <p class="text-muted">
+                Manage registered customers.
+            </p>
+
+        </div>
+
+        <a href="{% url 'customer_add' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i>
+            Add Customer
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <div class="card-body">
+
+            <table class="table table-hover align-middle">
+
+                <thead class="table-success">
+
+                <tr>
+
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th width="220">Action</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for customer in customers %}
+
+                <tr>
+
+                    <td>{{ customer.user.get_full_name|default:customer.user.username }}</td>
+
+                    <td>{{ customer.user.email }}</td>
+
+                    <td>{{ customer.address }}</td>
+
+                    <td>{{ customer.user.date_joined|date:"M d, Y" }}</td>
+
+                    <td>
+                        {% if customer.user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Suspended</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'customer_edit' customer.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <a href="{% url 'customer_toggle_active' customer.pk %}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-slash-circle"></i>
+                            </a>
+
+                            <button type="button" class="btn btn-sm btn-outline-danger js-delete-confirm-btn" data-url="{% url 'customer_delete' customer.pk %}" data-label="customer {{ customer.user.get_full_name|default:customer.user.username }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center text-muted py-5">
+
+                        <i class="bi bi-people fs-1"></i>
+
+                        <br><br>
+
+                        No customers found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+{% include "partials/delete_confirm_modal.html" %}
+
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Customer Dashboard
+{% endblock %}
+
+{% block content %}
+
+<style>
+.dashboard-hero{
+    background:linear-gradient(135deg,#ffffff 0%, #f2fff9 50%, #e9fff4 100%);
+    border:1px solid rgba(16,185,129,.14);
+}
+.summary-card{
+    background:linear-gradient(135deg,#ffffff 0%, #f4fffa 100%);
+    border:1px solid rgba(16,185,129,.12);
+    transition:transform .18s ease, box-shadow .18s ease;
+}
+.summary-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 14px 30px rgba(0,0,0,.08);
+}
+.summary-icon{
+    width:46px;
+    height:46px;
+    border-radius:14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(16,185,129,.12);
+    color:#059669;
+    font-size:1.25rem;
+}
+.status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    padding:.42rem .85rem;
+    border-radius:999px;
+    font-size:.9rem;
+    font-weight:600;
+}
+.current-panel{
+    background:linear-gradient(135deg,#ffffff 0%, #f8fffc 100%);
+}
+.table-shell{
+    overflow:hidden;
+    border-radius:20px;
+}
+.table thead th{
+    background:#dff7ec;
+    color:#14532d;
+    border-bottom:0;
+}
+.empty-state{
+    padding:2.5rem 1rem;
+}
+.empty-state-icon{
+    width:70px;
+    height:70px;
+    border-radius:22px;
+    margin:0 auto 1rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(16,185,129,.12);
+    color:#059669;
+    font-size:2rem;
+}
+</style>
+
+<div class="card border-0 shadow-sm dashboard-hero mb-4">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <div class="text-success fw-semibold text-uppercase small mb-2">Customer Queue</div>
+                <h2 class="fw-bold mb-2">Welcome, {{ request.user.get_full_name|default:request.user.username }}</h2>
+                <p class="text-muted mb-0">Track your appointments, queue status, and upcoming booking activity in one place.</p>
+            </div>
+            <a href="{% url 'customer_book_appointment' %}" class="btn btn-success px-4 py-2">Book Appointment</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card-body p-4 d-flex align-items-center gap-3">
+                <div class="summary-icon"><i class="bi bi-journal-check"></i></div>
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Total Appointments</div>
+                    <div class="fs-2 fw-bold mb-0">{{ appointments|length }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card-body p-4 d-flex align-items-center gap-3">
+                <div class="summary-icon"><i class="bi bi-circle-half"></i></div>
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Current Queue Status</div>
+                    <div class="mt-2">
+                        {% if active_appointment %}
+                            {% if active_appointment.status == "Waiting" %}
+                                <span class="status-pill bg-warning-subtle text-warning">Waiting</span>
+                            {% elif active_appointment.status == "Serving" %}
+                                <span class="status-pill bg-primary-subtle text-primary">Serving</span>
+                            {% elif active_appointment.status == "Pending" %}
+                                <span class="status-pill bg-secondary-subtle text-secondary">Pending</span>
+                            {% elif active_appointment.status == "Cancelled" %}
+                                <span class="status-pill bg-danger-subtle text-danger">Cancelled</span>
+                            {% else %}
+                                <span class="status-pill bg-success-subtle text-success">Completed</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">No appointment yet</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm summary-card h-100">
+            <div class="card-body p-4 d-flex align-items-center gap-3">
+                <div class="summary-icon"><i class="bi bi-123"></i></div>
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Latest Queue Number</div>
+                    <div class="fs-2 fw-bold mb-0">{% if active_appointment %}Q{{ active_appointment.queue_number|stringformat:"03d" }}{% elif appointments %}Q{{ appointments.0.queue_number|stringformat:"03d" }}{% else %}-{% endif %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if active_appointment %}
+<div class="card border-0 shadow-sm current-panel mb-4">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="text-success fw-semibold text-uppercase small mb-2">Active Booking</div>
+                <h5 class="fw-bold mb-1">Current Appointment</h5>
+                <div class="text-muted">{{ active_appointment.service }} on {{ active_appointment.date }} at {{ active_appointment.time }}</div>
+            </div>
+            <div class="text-end">
+                <div class="small text-muted">Queue Number</div>
+                <div class="display-6 fw-bold mb-1">Q{{ active_appointment.queue_number|stringformat:"03d" }}</div>
+                {% if active_appointment.status == "Waiting" %}
+                    <span class="badge text-bg-warning">Waiting</span>
+                {% elif active_appointment.status == "Serving" %}
+                    <span class="badge text-bg-primary">Serving</span>
+                {% elif active_appointment.status == "Pending" %}
+                    <span class="badge text-bg-secondary">Pending</span>
+                {% elif active_appointment.status == "Cancelled" %}
+                    <span class="badge text-bg-danger">Cancelled</span>
+                {% else %}
+                    <span class="badge text-bg-success">Completed</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h5 class="mb-1 fw-bold">Recent Appointments</h5>
+                <p class="text-muted mb-0">A quick view of your latest queue records.</p>
+            </div>
+            <a href="{% url 'customer_history' %}" class="btn btn-outline-success btn-sm px-3">View Full History</a>
+        </div>
+        <div class="table-shell">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Queue No.</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td class="fw-semibold">Q{{ appointment.queue_number|stringformat:"03d" }}</td>
+                        <td>{{ appointment.service }}</td>
+                        <td>{{ appointment.date }}</td>
+                        <td>{{ appointment.time }}</td>
+                        <td>
+                            {% if appointment.status == "Waiting" %}
+                                <span class="badge text-bg-warning">Waiting</span>
+                            {% elif appointment.status == "Serving" %}
+                                <span class="badge text-bg-primary">Serving</span>
+                            {% elif appointment.status == "Pending" %}
+                                <span class="badge text-bg-secondary">Pending</span>
+                            {% elif appointment.status == "Cancelled" %}
+                                <span class="badge text-bg-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge text-bg-success">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state text-center text-muted">
+                                <div class="empty-state-icon"><i class="bi bi-calendar2-plus"></i></div>
+                                <div class="fw-semibold mb-1">No appointments yet</div>
+                                <div class="mb-3">Book your first appointment to start tracking queue updates.</div>
+                                <a href="{% url 'customer_book_appointment' %}" class="btn btn-success px-4">Book Appointment</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

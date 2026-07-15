@@ -1,0 +1,123 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}
+QueueMaster | Admin Dashboard
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.dashboard-hero {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #10b981 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.14);
+}
+
+.dashboard-hero h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #064e3b;
+}
+
+.dashboard-hero p {
+    margin: 0;
+    color: #14532d;
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+.stat-card {
+    display: block;
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    text-decoration: none;
+    color: inherit;
+    background: #ffffff;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-body {
+    padding: 1.5rem;
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+.stat-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #2563eb;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #1d4ed8;
+}
+
+.stat-note {
+    margin: 0.75rem 0 0;
+    color: #475569;
+    font-size: 0.92rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #9ca3af;
+    font-size: 0.95rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-hero">
+    <h1>Admin Dashboard</h1>
+    <p>Manage customer and staff accounts from one place.</p>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-6">
+        <a href="{% url 'customer_list' %}" class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background:#dbeafe;color:#1e3a8a;"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-label">Total Customers</div>
+                <p class="stat-value">{{ customer_count }}</p>
+                <p class="stat-note">Review or manage customer accounts.</p>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-6">
+        <a href="{% url 'staff_list' %}" class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background:#fde68a;color:#92400e;"><i class="bi bi-person-badge-fill"></i></div>
+                <div class="stat-label">Total Staff</div>
+                <p class="stat-value">{{ staff_count }}</p>
+                <p class="stat-note">Manage staff accounts and roles.</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

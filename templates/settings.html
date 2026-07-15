@@ -1,0 +1,161 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}
+QueueMaster | Settings
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-hero">
+    <h1>Settings</h1>
+    <p>Set appointment availability and block closed dates so customers can only book valid slots.</p>
+</div>
+
+{% if not db_ready %}
+<div class="alert alert-warning">
+    The database schema is not ready yet. Please run <code>python manage.py migrate</code> to enable settings.
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4 shadow-sm rounded-4">
+            <h5 class="mb-3">Operating Hours</h5>
+            <p class="text-muted">Customers can only book appointments between these times.</p>
+            <form method="POST" id="hours-form" class="row g-3">
+                {% csrf_token %}
+                <div class="col-6">
+                    <label class="form-label">Open Time</label>
+                    {{ hours_form.open_time }}
+                    {{ hours_form.open_time.errors }}
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Close Time</label>
+                    {{ hours_form.close_time }}
+                    {{ hours_form.close_time.errors }}
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="button" id="edit-hours-btn" class="btn btn-outline-primary px-4">Edit Hours</button>
+                    <button type="submit" name="save_hours" id="save-hours-btn" class="btn btn-success px-4 d-none">Save Hours</button>
+                    <button type="button" id="cancel-hours-btn" class="btn btn-outline-secondary px-4 d-none">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card p-4 shadow-sm rounded-4">
+            <h5 class="mb-3">Closed Dates</h5>
+            <p class="text-muted">Add a closed date so customers cannot book on that day.</p>
+            <form method="POST" id="closed-day-form" class="row g-3 mb-3">
+                {% csrf_token %}
+                <input type="hidden" name="closed_day_pk" id="closed_day_pk" value="" />
+                <div class="col-6">
+                    <label class="form-label">Closed Date</label>
+                    {{ closed_form.date }}
+                    {{ closed_form.date.errors }}
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Reason</label>
+                    {{ closed_form.reason }}
+                    {{ closed_form.reason.errors }}
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" name="add_closed_day" id="save-closed-day-btn" class="btn btn-outline-success px-4">Add Closed Date</button>
+                    <button type="button" id="cancel-closed-day-btn" class="btn btn-outline-secondary px-4 d-none">Cancel</button>
+                </div>
+            </form>
+            {% if closed_days %}
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reason</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for closed_day in closed_days %}
+                        <tr>
+                            <td>{{ closed_day.date|date:"M d, Y" }}</td>
+                            <td>{{ closed_day.reason|default:"Closed" }}</td>
+                            <td class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary edit-closed-day-btn" data-pk="{{ closed_day.pk }}" data-date="{{ closed_day.date|date:'Y-m-d' }}" data-reason="{{ closed_day.reason }}">Edit</button>
+                                <a href="{% url 'closed_day_delete' closed_day.pk %}" class="btn btn-sm btn-outline-danger">Remove</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-secondary mb-0">No closed dates configured.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const hoursForm = document.querySelector("#hours-form");
+        const openTime = hoursForm.querySelector("input[name='open_time']");
+        const closeTime = hoursForm.querySelector("input[name='close_time']");
+        const editHoursBtn = document.querySelector("#edit-hours-btn");
+        const saveHoursBtn = document.querySelector("#save-hours-btn");
+        const cancelHoursBtn = document.querySelector("#cancel-hours-btn");
+
+        const originalOpen = openTime.value;
+        const originalClose = closeTime.value;
+
+        function setHoursEditable(editable) {
+            openTime.disabled = !editable;
+            closeTime.disabled = !editable;
+            editHoursBtn.classList.toggle("d-none", editable);
+            saveHoursBtn.classList.toggle("d-none", !editable);
+            cancelHoursBtn.classList.toggle("d-none", !editable);
+        }
+
+        setHoursEditable(false);
+
+        editHoursBtn.addEventListener("click", function(event) {
+            event.preventDefault();
+            setHoursEditable(true);
+        });
+
+        cancelHoursBtn.addEventListener("click", function(event) {
+            event.preventDefault();
+            openTime.value = originalOpen;
+            closeTime.value = originalClose;
+            setHoursEditable(false);
+        });
+
+        const closedDayForm = document.querySelector("#closed-day-form");
+        const closedDayPk = document.querySelector("#closed_day_pk");
+        const closedDateInput = closedDayForm.querySelector("input[name='date']");
+        const closedReasonInput = closedDayForm.querySelector("input[name='reason']");
+        const saveClosedDayBtn = document.querySelector("#save-closed-day-btn");
+        const cancelClosedDayBtn = document.querySelector("#cancel-closed-day-btn");
+
+        document.querySelectorAll(".edit-closed-day-btn").forEach(function(button) {
+            button.addEventListener("click", function() {
+                closedDayPk.value = this.dataset.pk;
+                closedDateInput.value = this.dataset.date;
+                closedReasonInput.value = this.dataset.reason;
+                saveClosedDayBtn.textContent = "Update Closed Date";
+                cancelClosedDayBtn.classList.remove("d-none");
+            });
+        });
+
+        cancelClosedDayBtn.addEventListener("click", function(event) {
+            event.preventDefault();
+            closedDayPk.value = "";
+            closedDateInput.value = "";
+            closedReasonInput.value = "";
+            saveClosedDayBtn.textContent = "Add Closed Date";
+            cancelClosedDayBtn.classList.add("d-none");
+        });
+    });
+</script>
+
+{% endblock %}

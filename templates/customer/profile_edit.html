@@ -1,0 +1,70 @@
+{% extends "layouts/customer_base.html" %}
+
+{% block title %}
+QueueMaster | Edit Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Edit Profile</h2>
+                <p class="text-muted mb-0">Update your name, email, address, and password.</p>
+            </div>
+            <div class="badge bg-success-subtle text-success px-3 py-2">Customer profile</div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if profile_form.errors %}
+            <div class="alert alert-danger">Please fix the highlighted fields and try again.</div>
+        {% endif %}
+
+        <form method="POST" class="row g-4">
+            {% csrf_token %}
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">First name</label>
+                {{ profile_form.first_name }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Last name</label>
+                {{ profile_form.last_name }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Email</label>
+                {{ profile_form.email }}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Address</label>
+                <input class="form-control" name="address" value="{{ customer.address }}" placeholder="Street, city, province">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">New password</label>
+                <input type="password" class="form-control" name="new_password" placeholder="Leave blank to keep current password">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Confirm password</label>
+                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm new password">
+            </div>
+
+            <div class="col-12 d-flex gap-2 pt-2">
+                <button type="submit" class="btn btn-success px-4">Save Changes</button>
+                <a href="{% url 'customer_profile' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

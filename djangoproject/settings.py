@@ -82,27 +82,27 @@ TEMPLATES = [
 WSGI_APPLICATION = 'djangoproject.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+database_url = (
+    os.environ.get('DATABASE_URL')
+    or os.environ.get('SUPABASE_URL')
+    or os.environ.get('POSTGRES_URL')
+)
 
-database_url = os.environ.get('DATABASE_URL') or os.environ.get('SUPABASE_URL') or os.environ.get('POSTGRES_URL')
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url, conn_max_age=600),
+    }
 
-if not database_url:
-    raise ImproperlyConfigured(
-        'Set DATABASE_URL, SUPABASE_URL, or POSTGRES_URL to your Supabase/Postgres connection string.'
-    )
-
-DATABASES = {
-    'default': dj_database_url.parse(database_url, conn_max_age=600),
-}
-
-if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
-    DATABASES['default'].setdefault('OPTIONS', {})
-    DATABASES['default']['OPTIONS'].setdefault('sslmode', 'require')
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+    if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+        DATABASES['default'].setdefault('OPTIONS', {})
+        DATABASES['default']['OPTIONS'].setdefault('sslmode', 'require')
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

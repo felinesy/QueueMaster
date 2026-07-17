@@ -36,6 +36,7 @@ render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host:
     ALLOWED_HOSTS.append(render_host)
 
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
 
 # Application definition
 
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'accounts',
     'dashboard',
 ]
@@ -81,28 +81,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'djangoproject.wsgi.application'
 
-
-database_url = (
-    os.environ.get('DATABASE_URL')
-    or os.environ.get('SUPABASE_URL')
-    or os.environ.get('POSTGRES_URL')
-)
-
-if database_url:
-    DATABASES = {
-        'default': dj_database_url.parse(database_url, conn_max_age=600),
-    }
-
-    if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
-        DATABASES['default'].setdefault('OPTIONS', {})
-        DATABASES['default']['OPTIONS'].setdefault('sslmode', 'require')
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+DATABASES = {
+    "default": dj_database_url.config(
+        env="DATABASE_URL",
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
